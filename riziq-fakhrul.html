@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MONITORING MOLDING</title>
+    <!-- External CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- External JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+
+    
+    <style>
+        /* ========== RESET & BASE STYLES ========== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        /* ========== LAYOUT COMPONENTS ========== */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin: 20px 0;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* ========== ANIMATIONS ========== */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ========== HEADER ========== */
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        /* ========== NAVIGATION ========== */
+        .navbar {
+            background: white;
+            padding: 15px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .navbar-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-item {
+            padding: 8px 15px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        /* ========== FORMS ========== */
+        .login-form {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        /* ========== BUTTONS ========== */
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn-full {
+            width: 100%;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-success {
+            background: #28a745;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+        }
+
+        /* ========== DASHBOARD ========== */
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .stat-card h3 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        /* ========== FILTERS ========== */
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        /* ========== TABLES ========== */
+        .table-container {
+            overflow-x: auto;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e1e5e9;
+        }
+
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #555;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .timestamp {
+            font-size: 12px;
+            color: #666;
+            font-weight: normal;
+        }
+
+        /* ========== RESPONSIVE DESIGN ========== */
+        @media (max-width: 768px) {
+            .navbar-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .nav-menu {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .filters {
+                flex-direction: column;
+            }
+
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+
+            .dashboard-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- ========== LOGIN PAGE ========== -->
+    <div id="loginPage" class="container">
+        <div class="header">
+            <h1><i class="fas fa-industry"></i> Sistem Monitoring Molding</h1>
+            <p>Platform Pelaporan dan Monitoring Hasil Produksi</p>
+        </div>
+        
+        <div class="card">
+            <div class="login-form">
+                <h2 style="text-align: center; margin-bottom: 30px; color: #667eea;">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </h2>
+                
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" class="form-control" 
+                           placeholder="Masukkan username" value="admin">
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" class="form-control" 
+                           placeholder="Masukkan password" value="admin123">
+                </div>
+                
+                <button type="button" class="btn btn-full" onclick="doLogin()">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </button>
+                
+                <div style="margin-top: 20px; text-align: center; color: #666; font-size: 14px;">
+                    <p><strong>Demo Login:</strong></p>
+                    <p>Username: admin | Password: admin123</p>
+                    <p>Username: operator1 | Password: pass123</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== MAIN APPLICATION ========== -->
+    <div id="mainApp" class="hidden">
+        <!-- Navigation -->
+        <nav class="navbar">
+            <div class="navbar-content">
+                <div class="logo">
+                    <i class="fas fa-industry"></i> Casting Monitor
+                </div>
+                
+                <div class="nav-menu">
+                    <div class="nav-item active" onclick="showPage('dashboard')">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard Hasil Produksi
+                    </div>
+                    <div class="nav-item" onclick="showPage('input')">
+                        <i class="fas fa-plus-circle"></i> Input Produksi
+                    </div>
+                    <div class="nav-item" onclick="showPage('reports')">
+                        <i class="fas fa-chart-bar"></i> Laporan
+                    </div>
+                </div>
+                
+                <div class="user-info">
+                    <i class="fas fa-user-circle"></i>
+                    <span id="currentUser">User</span>
+                    <button class="btn btn-secondary" onclick="doLogout()" 
+                            style="margin-left: 10px; padding: 5px 10px; font-size: 12px;">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container">
+            <!-- ========== DASHBOARD PAGE ========== -->
+<body>
+    <div class="container">
+        <!-- Dashboard Page -->
+        <div id="dashboardPage" class="page">
+            <div class="card">
+                <h2><i class="fas fa-tachometer-alt"></i> Dashboard Produksi</h2>
+                <div class="dateFilter">
+                     <input type="date" id="dashboardStartDate" class="form-control" placeholder="Tanggal Mulai" onchange="updateDashboard()">
+                     <input type="date" id="dashboardEndDate" class="form-control" placeholder="Tanggal Akhir" onchange="updateDashboard()">
+                </div>
+                <!-- Dashboard Stats -->
+              <div class="dashboard-stats">
+                        <div class="stat-card">
+                            <h3 id="totalProduction">0</h3>
+                            <p>Total Produksi</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3 id="totalTypes">0</h3>
+                            <p>Jenis Type</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3 id="totalMachines">0</h3>
+                            <p>Mesin Aktif</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3 id="totalCustomers">0</h3>
+                            <p>Customer</p>
+                        </div>
+                    </div>
+                    <!-- Other stat cards -->
+                </div>
+                <div class="table-container">
+                    <table id="dashboardTable">
+                        <thead>
+                            <tr>
+                                <th>Tanggal</th>
+                                <th>Waktu Input</th>
+                                <th>Type</th>
+                                <th>Customer</th>
+                                <th>Main Power</th>
+                                <th>No. Mesin</th>
+                                <th>Produksi</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dashboardTableBody">
+                            <!-- Data rows will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+                <div style="margin-top: 20px;">
+                    <button class="btn" onclick="exportExcel()">Export Excel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Include the exportPDF and exportExcel functions here
+    </script>
+</body>
+</html>
+
+            <!-- ========== INPUT PAGE ========== -->
+            <div id="inputPage" class="page hidden">
+                <div class="card">
+                    <h2><i class="fas fa-plus-circle"></i> Input Data Produksi</h2>
+                    
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label for="productionType">Type Produksi</label>
+                            <select id="productionType" class="form-control" onchange="updateCustomer()">
+                                <option value="">Pilih Type</option>
+                                <option value="A001">A001</option>
+                                <option value="A002">A002</option>
+                                <option value="B001">B001</option>
+                                <option value="B002">B002</option>
+                                <option value="C001">C001</option>
+                                <option value="C002">C002</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="customer">Customer</label>
+                            <input type="text" id="customer" class="form-control" readonly>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="machineNumber">Nomor Mesin</label>
+                            <select id="machineNumber" class="form-control">
+                                <option value="">Pilih Mesin</option>
+                                <option value="M001">Mesin 001</option>
+                                <option value="M002">Mesin 002</option>
+                                <option value="M003">Mesin 003</option>
+                                <option value="M004">Mesin 004</option>
+                                <option value="M005">Mesin 005</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="productionDate">Tanggal Produksi</label>
+                            <input type="date" id="productionDate" class="form-control">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="productionAmount">Jumlah Produksi</label>
+                            <input type="number" id="productionAmount" class="form-control" 
+                                   placeholder="Masukkan jumlah">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="notes">Catatan (Opsional)</label>
+                            <textarea id="notes" class="form-control" rows="3" 
+                                      placeholder="Catatan tambahan"></textarea>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 15px; margin-top: 30px;">
+                        <button type="button" class="btn btn-success" onclick="saveProduction()">
+                            <i class="fas fa-save"></i> Simpan Data
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="resetForm()">
+                            <i class="fas fa-undo"></i> Reset
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== REPORTS PAGE ========== -->
+            <div id="reportsPage" class="page hidden">
+                <div class="card">
+                    <h2><i class="fas fa-chart-bar"></i> Laporan & Filter</h2>
+                    
+                    <div class="filters">
+                        <input type="date" id="dashboardStartDate" class="form-control" 
+                               placeholder="Tanggal Mulai">
+                        <input type="date" id="dashboardEndDate" class="form-control" 
+                               placeholder="Tanggal Akhir">
+                        <select id="filterCustomer" class="form-control">
+                            <option value="">Semua Customer</option>
+                            <option value="PT. Maju Bersama">PT. Maju Bersama</option>
+                            <option value="PT. Jaya Abadi">PT. Jaya Abadi</option>
+                            
+                        </select>
+                        <button class="btn" onclick="filterReports()">
+                            <i class="fas fa-search"></i> Filter
+                        </button>
+                        <button class="btn btn-success" onclick="exportPDF()">
+                            <i class="fas fa-file-pdf"></i> Export PDF
+                        </button>
+                    </div>
+
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Tanggal</th>
+                                    <th>Waktu Input</th>
+                                    <th>Type</th>
+                                    <th>Customer</th>
+                                    <th>Main Power</th>
+                                    <th>No. Mesin</th>
+                                    <th>Produksi</th>
+                                    <th>Catatan</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reportsTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== JAVASCRIPT ========== -->
+    <script>
+        // ========== GLOBAL VARIABLES ==========
+        let currentUser = null;
+        let productionData = [];
+
+        // Type-Customer mapping
+        const typeCustomerData = {
+            "A001": "PT. Maju Bersama",
+            "A002": "CV. Sukses Mandiri",
+            "B001": "PT. Jaya Abadi",
+            "B002": "PT. Karya Prima",
+            "C001": "CV. Mitra Sejati",
+            "C002": "PT. Global Indonesia"
+        };
+
+        // ========== UTILITY FUNCTIONS ==========
+        function getCurrentTimestamp() {
+            const now = new Date();
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const seconds = now.getSeconds().toString().padStart(2, '0');
+            const milliseconds = now.getMilliseconds().toString().padStart(3, '0');
+            return `${hours}:${minutes}:${seconds}:${milliseconds}`;
+        }
+function exportExcel() {
+        const workbook = XLSX.utils.book_new();
+        const worksheetData = [];
+        const dashboardData = document.querySelectorAll("#dashboardTableBody tr");
+        // Menambahkan header
+        worksheetData.push(["Tanggal", "Waktu Input", "Type", "Customer", "Main Power", "No. Mesin", "Produksi"]);
+        dashboardData.forEach(row => {
+            const rowData = [];
+            row.querySelectorAll("td").forEach(cell => {
+                rowData.push(cell.innerText);
+            });
+            worksheetData.push(rowData);
+        });
+        const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Produksi");
+        // Mengunduh file Excel
+        XLSX.writeFile(workbook, "laporan_produksi.xlsx");
+    }
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('id-ID', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        // ========== STORAGE FUNCTIONS ==========
+        function saveToMemory() {
+            const appData = {
+                currentUser: currentUser,
+                productionData: productionData,
+                loginTime: Date.now()
+            };
+            window.appData = appData;
+        }
+
+        function loadFromMemory() {
+            if (window.appData && window.appData.currentUser) {
+                currentUser = window.appData.currentUser;
+                productionData = window.appData.productionData || [];
+                return true;
+            }
+            return false;
+        }
+
+        // ========== AUTHENTICATION ==========
+        function doLogin() {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            
+            const validUsers = {
+                'admin': 'admin123',
+                'operator1': 'pass123',
+                'operator2': 'pass456',
+                'supervisor': 'super123'
+            };
+
+            if (validUsers[username] && validUsers[username] === password) {
+                currentUser = username;
+                document.getElementById('currentUser').textContent = username;
+                document.getElementById('loginPage').classList.add('hidden');
+                document.getElementById('mainApp').classList.remove('hidden');
+                
+                loadExistingData();
+                updateDashboard();
+                saveToMemory();
+                
+                alert('Login berhasil! Selamat datang ' + username);
+            } else {
+                alert('Login gagal!\n\nCoba:\nUsername: admin\nPassword: admin123');
+            }
+        }
+
+        function doLogout() {
+            if (confirm('Yakin ingin logout?')) {
+                saveToMemory();
+                currentUser = null;
+                document.getElementById('loginPage').classList.remove('hidden');
+                document.getElementById('mainApp').classList.add('hidden');
+                document.getElementById('username').value = 'admin';
+                document.getElementById('password').value = 'admin123';
+            }
+        }
+
+        // ========== PAGE NAVIGATION ==========
+        function showPage(pageId) {
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => page.classList.add('hidden'));
+            
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => item.classList.remove('active'));
+            
+            document.getElementById(pageId + 'Page').classList.remove('hidden');
+            event.target.classList.add('active');
+        }
+
+        // ========== DATA MANAGEMENT ==========
+        function loadExistingData() {
+            document.getElementById('dashboardTableBody').innerHTML = '';
+            document.getElementById('reportsTableBody').innerHTML = '';
+            
+            if (productionData && productionData.length > 0) {
+                productionData.forEach(production => {
+                    addRowToDashboard(production);
+                    addRowToReports(production);
+                });
+            }
+        }
+
+        function updateCustomer() {
+            const selectedType = document.getElementById('productionType').value;
+            const customerField = document.getElementById('customer');
+            
+            if (selectedType && typeCustomerData[selectedType]) {
+                customerField.value = typeCustomerData[selectedType];
+            } else {
+                customerField.value = '';
+            }
+        }
+
+        function saveProduction() {
+            const type = document.getElementById('productionType').value;
+            const customer = document.getElementById('customer').value;
+            const machine = document.getElementById('machineNumber').value;
+            const date = document.getElementById('productionDate').value;
+            const amount = parseInt(document.getElementById('productionAmount').value);
+            const notes = document.getElementById('notes').value;
+
+            if (!type || !customer || !machine || !date || !amount) {
+                alert('Harap lengkapi semua field yang wajib diisi!');
+                return;
+            }
+
+            const production = {
+                id: Date.now(),
+                type: type,
+                customer: customer,
+                machine: machine,
+                date: date,
+                amount: amount,
+                notes: notes,
+                mainPower: currentUser,
+                timestamp: new Date(),
+                timeString: getCurrentTimestamp()
+            };
+
+            productionData.push(production);
+            addRowToDashboard(production);
+            addRowToReports(production);
+            saveToMemory();
+            
+            alert('Data produksi berhasil disimpan!');
+            resetForm();
+            updateDashboard();
+        }
+  
+
+        function resetForm() {
+            document.getElementById('productionType').value = '';
+            document.getElementById('customer').value = '';
+            document.getElementById('machineNumber').value = '';
+            document.getElementById('productionDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('productionAmount').value = '';
+            document.getElementById('notes').value = '';
+        }
+
+        function deleteRow(btn, productionId) {
+            if (confirm('Yakin ingin menghapus data ini?')) {
+                productionData = productionData.filter(p => p.id !== productionId);
+                
+                const dashboardRow = document.querySelector(`#dashboardTableBody tr[data-id="${productionId}"]`);
+                if (dashboardRow) dashboardRow.remove();
+                
+                const reportsRow = document.querySelector(`#reportsTableBody tr[data-id="${productionId}"]`);
+                if (reportsRow) reportsRow.remove();
+                
+                saveToMemory();
+                updateDashboard();
+            }
+        }
+
+        // ========== TABLE MANAGEMENT ==========
+        function addRowToDashboard(production) {
+            const tbody = document.getElementById('dashboardTableBody');
+            const row = tbody.insertRow(0);
+            row.setAttribute('data-id', production.id);
+            
+            row.innerHTML = `
+                <td>${formatDate(production.date)}</td>
+                <td><span class="timestamp">${production.timeString || 'N/A'}</span></td>
+                <td>${production.type}</td>
+                <td>${production.customer}</td>
+                <td>${production.mainPower}</td>
+                <td>${production.machine}</td>
+                <td>${production.amount}</td>
+                <td>
+                    <button class="btn btn-danger" onclick="deleteRow(this, ${production.id})" 
+                            style="padding: 5px 10px; font-size: 12px;">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+        }
+
+        function addRowToReports(production) {
+            const tbody = document.getElementById('reportsTableBody');
+            const row = tbody.insertRow(0);
+            row.setAttribute('data-id', production.id);
+            
+            row.innerHTML = `
+                <td>${formatDate(production.date)}</td>
+                <td><span class="timestamp">${production.timeString || 'N/A'}</span></td>
+                <td>${production.type}</td>
+                <td>${production.customer}</td>
+                <td>${production.mainPower}</td>
+                <td>${production.machine}</td>
+                <td>${production.amount}</td>
+                <td>${production.notes || '-'}</td>
+            `;
+        }
+
+        // ========== DASHBOARD UPDATES ==========
+
+function updateDashboard() {
+    const startDateInput = document.getElementById('dashboardStartDate').value;
+    const endDateInput = document.getElementById('dashboardEndDate').value;
+
+    if (!startDateInput || !endDateInput) return;
+
+    const startDate = new Date(startDateInput);
+    const endDate = new Date(endDateInput);
+    endDate.setHours(23, 59, 59, 999);
+
+    const filteredData = productionData.filter(item => {
+        const itemDate = new Date(item.date);
+        return itemDate >= startDate && itemDate <= endDate;
+    });
+
+    const totalProduction = filteredData.reduce((sum, item) => sum + item.amount, 0);
+    const uniqueTypes = [...new Set(filteredData.map(item => item.type))];
+    const activeMachines = [...new Set(filteredData.map(item => item.machine))];
+    const customers = [...new Set(filteredData.map(item => item.customer))];
+
+    document.getElementById('totalProduction').textContent = totalProduction;
+    document.getElementById('totalTypes').textContent = uniqueTypes.length;
+    document.getElementById('totalMachines').textContent = activeMachines.length;
+    document.getElementById('totalCustomers').textContent = customers.length;
+
+    document.getElementById('dashboardTableBody').innerHTML = '';
+    filteredData.forEach(production => {
+        addRowToDashboard(production);
+    });
+}
+
+        ;
+
+
+
+  
+    function exportPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        // Menambahkan judul
+        doc.text("Laporan Produksi", 10, 10);
+
+        // Menambahkan data dari tabel
+        const tableColumn = ["Tanggal", "Waktu Input", "Type", "Customer", "Main Power", "No. Mesin", "Produksi"];
+        const tableRows = [];
+
+        const dashboardData = document.querySelectorAll("#dashboardTableBody tr");
+        dashboardData.forEach(row => {
+            const rowData = [];
+            row.querySelectorAll("td").forEach(cell => {
+                rowData.push(cell.innerText);
+            });
+            tableRows.push(rowData);
+        });
+
+        // Menggunakan autoTable untuk menambahkan tabel ke PDF
+        doc.autoTable({
+            head: [tableColumn],
+            body: tableRows,
+            startY: 20, // Menentukan posisi Y untuk tabel
+        });
+
+        // Mengunduh file PDF
+        doc.save("laporan_produksi.pdf");
+    }
+
+
+        // ========== EVENT LISTENERS ==========
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !document.getElementById('loginPage').classList.contains('hidden')) {
+                doLogin();
+            }
+        });
+    </script>
